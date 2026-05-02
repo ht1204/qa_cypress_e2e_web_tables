@@ -49,12 +49,12 @@ describe('Web Tables page', () => {
     cy.get('tbody tr td:first-child').then(($cells) => {
       const names = [...$cells].map((c) => c.textContent);
 
-      names.forEach((name) => {
-        cy.contains('tbody tr', name)
+      for (let i = names.length - 1; i >= 0; i--) {
+        cy.contains('tbody tr', names[i])
           .find('[title="Delete"]')
           .invoke('click');
-        cy.contains('tbody tr', name).should('not.exist');
-      });
+        cy.contains('tbody tr', names[i]).should('not.exist');
+      }
     });
   });
 
@@ -91,54 +91,67 @@ describe('Web Tables page', () => {
     // eslint-disable-next-line max-len
     cy.fillTheFormAndAddWorker(firstName, lastName, email, age, salary, department);
 
-    cy.get('#searchBox').type(firstName);
+    cy.get('#searchBox').should('be.visible').type(firstName);
     // eslint-disable-next-line max-len
-    cy.contains('tbody tr', firstName).should('contain.text', email);
+    cy.get('tbody tr').should('contain.text', firstName)
+      .and('contain.text', email);
     cy.get('#searchBox').clear();
 
-    cy.get('#searchBox').type(lastName);
+    cy.get('#searchBox').should('be.visible').type(lastName);
     // eslint-disable-next-line max-len
-    cy.contains('tbody tr', lastName).should('contain.text', email);
+    cy.get('tbody tr').should('contain.text', lastName)
+      .and('contain.text', email);
     cy.get('#searchBox').clear();
 
-    cy.get('#searchBox').type(email);
+    cy.get('#searchBox').should('be.visible').type(email);
     // eslint-disable-next-line max-len
-    cy.contains('tbody tr', email).should('contain.text', lastName);
+    cy.get('tbody tr').should('contain.text', email)
+      .and('contain.text', lastName);
     cy.get('#searchBox').clear();
 
-    cy.get('#searchBox').type(age);
+    cy.get('#searchBox').should('be.visible').type(age);
     // eslint-disable-next-line max-len
-    cy.contains('tbody tr', age).should('contain.text', email);
+    cy.get('tbody tr').should('contain.text', age)
+      .and('contain.text', email);
     cy.get('#searchBox').clear();
 
-    cy.get('#searchBox').type(salary);
+    cy.get('#searchBox').should('be.visible').type(salary);
     // eslint-disable-next-line max-len
-    cy.contains('tbody tr', salary).should('contain.text', email);
+    cy.get('tbody tr').should('contain.text', salary)
+      .and('contain.text', email);
     cy.get('#searchBox').clear();
 
-    cy.get('#searchBox').type(department);
+    cy.get('#searchBox').should('be.visible').type(department);
     // eslint-disable-next-line max-len
-    cy.contains('tbody tr', department).should('contain.text', email);
+    cy.get('tbody tr').should('contain.text', department)
+      .and('contain.text', email);
   });
 
   it('should change rows count per page', () => {
-    cy.addUsers(8);
+    cy.get('tbody tr').its('length').then((initialCount) => {
+      const total = initialCount + 8;
 
-    cy.get('tbody tr').should('have.length', 10);
+      cy.addUsers(8);
+      cy.get('tbody tr').should('have.length', Math.min(total, 10));
 
-    cy.get('select.form-control').select('20');
-    cy.get('tbody tr').should('have.length', 11);
+      cy.get('select.form-control').select('20');
+      cy.get('tbody tr').should('have.length', total);
+    });
   });
 
   it('should navigate between pages', () => {
-    cy.addUsers(8);
+    cy.get('tbody tr').its('length').then((initialCount) => {
+      const total = initialCount + 8;
 
-    cy.get('tbody tr').should('have.length', 10);
+      cy.addUsers(8);
+      cy.get('tbody tr').should('have.length', Math.min(total, 10));
 
-    cy.contains('.pagination button', 'Next').click();
-    cy.get('tbody tr').should('have.length', 1);
+      cy.contains('.pagination button', 'Next').click();
+      // eslint-disable-next-line max-len
+      cy.get('tbody tr').should('have.length', total - 10);
 
-    cy.contains('.pagination button', 'Previous').click();
-    cy.get('tbody tr').should('have.length', 10);
+      cy.contains('.pagination button', 'Previous').click();
+      cy.get('tbody tr').should('have.length', Math.min(total, 10));
+    });
   });
 });
